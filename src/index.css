@@ -1,0 +1,73 @@
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Quicksand:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Italiana&family=Inter:wght@200;400;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  background-color: #020617; 
+  color: #ffffff;
+}
+
+/* KUNCI MOBILE: Mencegah scroll & zoom tidak sengaja */
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; 
+  touch-action: manipulation; 
+  -webkit-tap-highlight-color: transparent; 
+}
+
+/* Kelas Kaca (Glassmorphism) untuk Toast & Modal */
+.glass {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+::selection {
+  background: rgba(236, 72, 153, 0.5); /* Pink selection */
+  color: white;
+}
+
+/* EFEK NOISE / FILM GRAIN */
+.noise-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 50;
+  opacity: 0.04; /* Lebih tipis */
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='1'/%3E%3C/svg%3E");
+}
+
+/* ANIMASI BACKGROUND CSS (Cadangan kalau JS gagal load) */
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animated-bg {
+  /* Gradasi lebih rich (Ungu - Biru - Navy) */
+  background: linear-gradient(-45deg, #1e1b4b, #312e81, #4c1d95, #0f172a);
+  background-size: 400% 400%;
+  animation: gradient-move 15s ease infinite;
+}
+
+/* CUSTOM SCROLLBAR (Biar kalau ada yang bisa discroll, scrollbarnya rapi) */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2); 
+  border-radius: 10px;
+}
