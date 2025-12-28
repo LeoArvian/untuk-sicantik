@@ -12,11 +12,12 @@ const Story = ({ onFinished }: StoryProps) => {
   const messages = [
     "Halo, Manda...", 
     "Siap-siap ganti tahun nih.",
-    "Sayang banget belum bisa liat kembang api bareng...",
-    "Tapi aku tetep seneng bisa kenal deket sama kamu di tahun ini.",
+    "Maaf ya tahun ini kembang apinya virtual dulu di sini... 🎆",
+    "Tapi aku seneng banget bisa kenal kamu di 2025.",
     "Makasih udah jadi bagian cerita aku di tahun ini.",
-    "Semoga 2026 jadi tahun yang lebih seru buat kita.",
-    "Sebelum lanjut, main game bentar yuk..."
+    "Semoga 2026 nanti lebih baik buat kita.",
+    "Sebelum buka suratnya, selesaikan Quiz ini dulu ya...",
+    "Syarat KKM: Harus bener semua! 😆"
   ];
 
   const [index, setIndex] = useState(0);

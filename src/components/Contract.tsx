@@ -4,36 +4,27 @@ import { FileSignature, Download, Loader2, Crown, Stamp, ShieldCheck, X } from '
 import html2canvas from 'html2canvas';
 
 // --- IMPORT KOMPONEN RAHASIA ---
-// Pastikan file SecretExit.tsx sudah ada di folder yang sama
 import SecretExit from './SecretExit'; 
 
 const Contract = () => {
   const [isAgreed, setIsAgreed] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   
-  // State posisi tombol Gak Mau
-  const [btnStyle, setBtnStyle] = useState<React.CSSProperties>({}); // Fix type 'any' biar aman deploy
+  const [btnStyle, setBtnStyle] = useState<React.CSSProperties>({});
   const [hasMoved, setHasMoved] = useState(false);
   
   const cardRef = useRef<HTMLDivElement>(null);
 
-  // --- LOGIC SECRET EXIT (TRIGGER FIX) ---
+  // --- LOGIC SECRET EXIT ---
   const [showSecret, setShowSecret] = useState(false);
-  
-  // Menggunakan useRef untuk counter (Best Practice: Tidak memicu re-render & lolos linter)
   const secretTapRef = useRef(0); 
 
   const handleBarcodeTap = () => {
-    secretTapRef.current += 1; // Tambah hitungan
-    
-    // Jika diketuk 5x atau lebih
-    if (secretTapRef.current >= 5) {
-        setShowSecret(true); // Munculkan menu rahasia
-        secretTapRef.current = 0; // Reset hitungan
+    secretTapRef.current += 1; 
+    if (secretTapRef.current >= 6) {
+        setShowSecret(true); 
+        secretTapRef.current = 0; 
     }
-
-    // (Opsional) Reset otomatis kalau orang iseng ngetuknya lama jedanya
-    // Kita biarkan simple dulu biar tidak error
   };
 
   // --- LOGIC DOWNLOAD ---
@@ -41,11 +32,13 @@ const Contract = () => {
     if (!cardRef.current) return;
     setIsDownloading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 500)); // Tunggu render
+      await new Promise(resolve => setTimeout(resolve, 800)); 
       
       const canvas = await html2canvas(cardRef.current, {
         backgroundColor: "transparent", 
         scale: 2, 
+        useCORS: true, 
+        scrollY: 0, 
         ignoreElements: (element) => element.classList.contains('hide-on-print'),
       });
       const image = canvas.toDataURL("image/png");
@@ -77,10 +70,8 @@ const Contract = () => {
   return (
     <div className="w-full min-h-screen flex flex-col items-center justify-center p-4 relative z-10">
       
-      {/* RENDER KOMPONEN RAHASIA (Hanya muncul jika showSecret = true) */}
       <SecretExit isOpen={showSecret} onClose={() => setShowSecret(false)} />
 
-      {/* INJECT FONT ROYALISTER */}
       <style>{`
         @font-face {
           font-family: 'Royalister';
@@ -156,7 +147,7 @@ const Contract = () => {
             {/* FOOTER (MATERAI IMAGE & TTD) */}
             <div className="mt-8 flex flex-col md:flex-row justify-between items-center md:items-end gap-6 relative">
                 
-                {/* MATERAI IMAGE (DARI FILE PUBLIC) */}
+                {/* MATERAI IMAGE */}
                 <div className="relative w-24 h-24 shrink-0 rotate-[-2deg] drop-shadow-md">
                    <img 
                      src="/materai.png" 
@@ -168,40 +159,44 @@ const Contract = () => {
                 {/* KOLOM TANDA TANGAN */}
                 <div className="flex flex-col items-center relative w-full md:w-auto">
                     
-                    {/* Teks "Tertanda," */}
                     <p className="text-[10px] font-serif text-[#3E2723] uppercase tracking-wider mb-1 font-bold">
                         Tertanda,
                     </p>
 
-                    <div className="relative w-full md:w-48 h-24 flex items-center justify-center">
+                    {/* Container Tanda Tangan */}
+                    <div className="relative w-full md:w-48 h-32 flex flex-col">
                         
                         <AnimatePresence mode='wait'>
                             {isAgreed ? (
-                                // HASIL SAH (TANDA TANGAN + NAMA JELAS + STEMPEL)
-                                <div className="relative w-full h-full flex flex-col items-center justify-center pt-2">
-                                    
-                                    {/* TANDA TANGAN (Font Royalister) */}
+                                // HASIL SAH (FINAL FIX POSITION)
+                                <motion.div 
+                                    key="signed"
+                                    className="relative w-full h-full flex flex-col"
+                                >
+                                    {/* 1. TANDA TANGAN */}
+                                    {/* pt-3: Menekan tanda tangan ke bawah (biar pas di Web) */}
+                                    {/* mb-1: Memberi jarak bawah (biar pas di Download gak nempel nama) */}
                                     <motion.div
                                         initial={{ pathLength: 0, opacity: 0 }}
                                         animate={{ pathLength: 1, opacity: 1 }}
                                         transition={{ duration: 1 }}
-                                        className="text-5xl text-[#3E2723] z-10 leading-none"
+                                        className="flex-1 flex items-center justify-center text-5xl text-[#3E2723] z-10 leading-none pt-3 mb-1"
                                         style={{ fontFamily: "'Royalister', cursive" }}
                                     >
                                         Amanda
                                     </motion.div>
 
-                                    {/* NAMA JELAS (Garis Bawah) */}
+                                    {/* 2. NAMA JELAS */}
                                     <motion.div
                                          initial={{ opacity: 0 }}
                                          animate={{ opacity: 1 }}
                                          transition={{ delay: 0.5 }}
-                                         className="text-[10px] font-serif font-bold text-[#3E2723] uppercase tracking-widest mt-1 border-b border-[#3E2723] pb-[2px] z-10"
+                                         className="shrink-0 mx-auto text-[10px] font-serif font-bold text-[#3E2723] uppercase tracking-widest border-b border-[#3E2723] pb-[2px] z-10 mb-2"
                                     >
                                         Amanda Nur Hasanah
                                     </motion.div>
 
-                                    {/* STEMPEL MERAH (Posisi Absolute biar stempelnya NINDIH tanda tangan) */}
+                                    {/* 3. STEMPEL MERAH */}
                                     <motion.div 
                                         initial={{ scale: 3, opacity: 0 }}
                                         animate={{ scale: 1, opacity: 1 }}
@@ -211,20 +206,20 @@ const Contract = () => {
                                             damping: 15,
                                             delay: 0.2
                                         }}
-                                        className="absolute z-20 transform -rotate-12 mix-blend-multiply -top-2"
+                                        className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
                                     >
-                                        {/* Background transparan, cuma border & text */}
-                                        <div className="border-[4px] border-red-700 text-red-700 px-4 py-2 rounded-lg font-black font-serif uppercase tracking-[0.2em] shadow-sm bg-red-500/10">
+                                        <div className="transform -rotate-12 border-[4px] border-red-700 text-red-700 px-4 py-2 rounded-lg font-black font-serif uppercase tracking-[0.2em] shadow-sm bg-red-500/10 backdrop-blur-[1px] mix-blend-multiply">
                                             <div className="flex items-center gap-2 text-xs border-b-2 border-red-700 pb-1 mb-1 justify-center">
                                                 <Stamp size={16} /> OFFICIAL
                                             </div>
                                             ACCEPTED
                                         </div>
                                     </motion.div>
-                                </div>
+                                </motion.div>
                             ) : (
                                 // TOMBOL INTERAKTIF
                                 <motion.div 
+                                    key="buttons"
                                     exit={{ opacity: 0, scale: 0.8 }}
                                     className="w-full h-full relative flex items-center justify-center gap-4 hide-on-print"
                                 >
@@ -255,9 +250,9 @@ const Contract = () => {
                 </div>
             </div>
 
-            {/* ID BARCODE (TEMPAT RAHASIA) */}
+            {/* ID BARCODE */}
             <div 
-                onClick={handleBarcodeTap} // <-- TRIGGER DI SINI
+                onClick={handleBarcodeTap} 
                 className="mt-6 pt-2 border-t border-yellow-900/20 flex justify-between items-end opacity-60 cursor-pointer active:opacity-100 transition-opacity"
             >
                 <div className="h-6 w-32 bg-[url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d0/QR_code_for_mobile_English_Wikipedia.svg/1200px-QR_code_for_mobile_English_Wikipedia.svg.png')] bg-contain bg-no-repeat opacity-50 grayscale"></div>
@@ -266,7 +261,7 @@ const Contract = () => {
         </div>
       </motion.div>
 
-      {/* TOMBOL DOWNLOAD (STATIS DI BAWAH) */}
+      {/* TOMBOL DOWNLOAD */}
       <AnimatePresence>
         {isAgreed && (
             <motion.div 
