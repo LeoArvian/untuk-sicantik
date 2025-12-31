@@ -20,7 +20,7 @@ type SceneState = 'OPENING' | 'STORY' | 'QUIZ' | 'WISH' | 'ENDING';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
-  const [scene, setScene] = useState<SceneState>('ENDING');
+  const [scene, setScene] = useState<SceneState>('OPENING');
   const [isMusicPlaying, setIsMusicPlaying] = useState(false);
   
   // STATE UNTUK NOTIFIKASI BARU
