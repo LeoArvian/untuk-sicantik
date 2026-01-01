@@ -52,7 +52,7 @@ const QUESTIONS_DATA = [
     q: "Coba tebak, hal apa dari aku yang paling sering kamu perhatiin diem-diem?",
     options: [
       { text: "Gaya jalan / Penampilan", msg: "Ciye merhatiin detail banget nih... 🫣" },
-      { text: "Gak ada", msg: "Tombol ini rusak. Kamu pasti bohong 😝" },
+      { text: "Gak ada", msg: "Bohong nya kelihatan tuh 😝" },
       { text: "Aib aku", msg: "Dih, yang bagus-bagus napa diingetnya! 😤" },
       { text: "Senyum aku (Eaa)", msg: "Waduh, bisa diabetes nanti kalau sering liat 🍯" }
     ]
