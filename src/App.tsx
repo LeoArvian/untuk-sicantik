@@ -22,7 +22,7 @@ type SceneState = 'OPENING' | 'STORY' | 'QUIZ' | 'WISH' | 'ENDING' | 'ADMIN';
 
 function App() {
   // Default Scene
-  const [scene, setScene] = useState<SceneState>('OPENING');
+  const [scene, setScene] = useState<SceneState>('QUIZ');
   
   // Logic Loading: Default True, tapi kalau Admin nanti jadi False
   const [isLoading, setIsLoading] = useState(true);
