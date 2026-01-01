@@ -12,10 +12,10 @@ interface SecretExitProps {
 const PUZZLE_STEPS = [
   {
     id: 1,
-    clue: "🔒 SECURITY LEVEL 1\nTahun target visi misi VVIP kita?",
+    clue: "🔒 SECURITY LEVEL 1\nSekarang tahun berapa?",
     placeholder: "YYYY",
     validate: (ans: string) => ans.trim() === "2026",
-    errorMsg: "Tahunnya salah. Coba ingat janji kita."
+    errorMsg: "Tahunnya salah. Coba ingat lagi"
   },
   {
     id: 2,
@@ -26,8 +26,8 @@ const PUZZLE_STEPS = [
   },
   {
     id: 3,
-    clue: "🔒 SECURITY LEVEL 3\nAngka tadi (6) dikurangi jumlah poin janji di kontrak?",
-    placeholder: "Hasilnya...",
+    clue: "🔒 SECURITY LEVEL 3\nAngka tadi (6) dikurangi jumlah poin janji di kontrak (4)?",
+    placeholder: "6 - 4",
     validate: (ans: string) => ans.trim() === "2",
     errorMsg: "6 dikurang 4 poin janji = ...?"
   },
@@ -44,13 +44,13 @@ const PUZZLE_STEPS = [
   {
     id: 5,
     clue: "🔒 SECURITY LEVEL 5\nOrang di urutan kedua (Pemegang Tiket), namanya ada berapa huruf?",
-    placeholder: "Angka",
+    placeholder: "Nama amanda ada berapa huruf?",
     validate: (ans: string) => ans.trim() === "6", 
     errorMsg: "Hitung huruf 'A-M-A-N-D-A'."
   },
   {
     id: 6,
-    clue: "💎 FINAL KEY\nSatu kata (6 huruf) yang mendeskripsikan dia & paling sering Azriel sebut?",
+    clue: "💎 FINAL KEY\nSatu kata (6 huruf) yang mendeskripsikan amanda & paling sering Azriel sebut?",
     placeholder: "C.....",
     validate: (ans: string) => ans.toLowerCase().trim() === "cantik",
     errorMsg: "Jujur aja. Depannya C, belakangnya K."
@@ -313,7 +313,7 @@ const SecretExit = ({ isOpen, onClose }: SecretExitProps) => {
                             </p>
 
                             <p>
-                                Kita emang gak pacaran. Aku tau. Tapi kedekatan kita kemarin itu nyata kan? Atau cuma aku aja yang ngerasa gitu?
+                                Kita emang gak ada hubungan apa-apa. Aku tau. Tapi kedekatan kita kemarin itu nyata kan? Atau cuma aku aja yang ngerasa gitu?
                                 Kadang aku ngerasa aku ini cuma <strong className="text-red-400">"NPC"</strong> di hidup kamu. Yang dicari pas ada <em>quest</em> (tugas/butuh bantuan) doang, tapi pas <em>quest</em>-nya kelar, aku dilupain lagi.
                             </p>
 
@@ -323,7 +323,7 @@ const SecretExit = ({ isOpen, onClose }: SecretExitProps) => {
                                 </p>
                                 <p className="text-xs md:text-sm text-zinc-400">
                                 Kangen Manda yang <em>humble</em>. Yang antusias denger ceritaku. Yang bisa diajak chatan seru tanpa mikirin gengsi.
-                                Sekarang? Rasanya kayak ngobrol sama tembok. Cuma "iya", "oke". Aku kangen ngerasa <strong className="text-white">dilihat</strong>, bukan cuma <strong className="text-white">dibutuhkan</strong>.
+                                Sekarang? Rasanya kayak ngobrol sama tembok. Cuma "iya", "oke". Aku kangen ngerasa <strong className="text-white">dilihat</strong>, bukan cuma <strong className="text-white">dicari pas butuh doang.</strong>.
                                 </p>
                             </div>
 
@@ -368,7 +368,7 @@ const SecretExit = ({ isOpen, onClose }: SecretExitProps) => {
                                         <TriangleAlert size={16}/> WARNING
                                     </div>
                                     <p className="text-red-200 text-xs">
-                                        Yakin Man? Kalau kamu tekan ini, aku bakal beneran mundur dan berhenti ganggu notif kamu.
+                                        Yakin Man? Kalau kamu tekan ini, aku bakal beneran mundur dan berhenti ganggu notif kamu. (Semoga enggak)
                                     </p>
                                     <div className="flex gap-3 justify-center pt-2">
                                         <button 
@@ -392,7 +392,7 @@ const SecretExit = ({ isOpen, onClose }: SecretExitProps) => {
                                 className="w-full py-4 rounded-xl bg-gradient-to-r from-yellow-600 to-yellow-800 text-white font-bold shadow-[0_5px_20px_rgba(234,179,8,0.2)] hover:scale-[1.01] transition-transform flex items-center justify-center gap-2 border border-yellow-400/20"
                             >
                                 <MessageCircle size={18} />
-                                Jangan Mundur. Ayo Perbaiki.
+                                Jangan Mundur.
                             </button>
                         </div>
                     </motion.div>
