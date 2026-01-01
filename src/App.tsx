@@ -7,7 +7,7 @@ import AuroraBackground from './components/AuroraBackground';
 import ShootingStars from './components/ShootingStars';
 import AudioPlayer from './components/AudioPlayer';
 import { LoadingScreen } from './components/CustomUI';
-import CustomToast from './components/CustomToast'; // <--- IMPORT INI
+import CustomToast from './components/CustomToast';
 
 // --- IMPORT SCENES ---
 import Opening from './components/Opening'; 
@@ -15,8 +15,10 @@ import Story from './components/Story';
 import QuizSystem from './components/QuizSystem'; 
 import Wish from './components/Wish';
 import Ending from './components/Ending';
+import AdminDashboard from './components/AdminDashboard'; // <--- IMPORT PANEL ADMIN
 
-type SceneState = 'OPENING' | 'STORY' | 'QUIZ' | 'WISH' | 'ENDING';
+// TAMBAHKAN 'ADMIN' KE TIPE SCENE
+type SceneState = 'OPENING' | 'STORY' | 'QUIZ' | 'WISH' | 'ENDING' | 'ADMIN';
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -35,22 +37,41 @@ function App() {
     return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
   }, []);
 
-  // --- FEATURE: ANTI CEPU (REVISI) ---
+  // --- FEATURE: ANTI CEPU & SECRET ADMIN ACCESS ---
   useEffect(() => {
+    // 1. Anti Klik Kanan
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault(); 
-      // GANTI ALERT BAWAAN DENGAN CUSTOM TOAST
       setToastMessage("Eits! Dilarang intip codingan 😜");
     };
+
+    // 2. Cek URL Hash untuk masuk Admin (Jalan Tikus)
+    // Cara pakai: Tambahkan #admin di akhir URL website (contoh: localhost:5173/#admin)
+    const checkHash = () => {
+      if (window.location.hash === '#admin') {
+        setIsLoading(false); // Skip loading
+        setScene('ADMIN');   // Langsung loncat ke Admin
+        // Hapus hash biar rapi
+        history.replaceState(null, '', ' '); 
+      }
+    };
+
     document.addEventListener("contextmenu", handleContextMenu);
+    
+    // Cek hash saat pertama kali load
+    checkHash();
+
     return () => document.removeEventListener("contextmenu", handleContextMenu);
   }, []);
 
-  // Timer Loading Screen
+  // Timer Loading Screen (Normal Mode)
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 3500); 
-    return () => clearTimeout(timer);
-  }, []);
+    // Kalau mode admin, timer gak usah jalan karena sudah di-skip di atas
+    if (scene !== 'ADMIN') {
+        const timer = setTimeout(() => setIsLoading(false), 3500); 
+        return () => clearTimeout(timer);
+    }
+  }, [scene]);
 
   return (
     <main className="relative w-full h-screen overflow-hidden text-white selection:bg-pink-500 selection:text-white select-none bg-transparent">
@@ -60,9 +81,10 @@ function App() {
       <ShootingStars />          
       <ParticlesBackground />
       
-      <AudioPlayer isPlaying={isMusicPlaying} />
+      {/* Audio Player (Disembunyikan di Mode Admin biar gak berisik pas mantau) */}
+      {scene !== 'ADMIN' && <AudioPlayer isPlaying={isMusicPlaying} />}
 
-      {/* --- KOMPONEN NOTIFIKASI (Ditaruh paling atas biar z-index tinggi) --- */}
+      {/* --- KOMPONEN NOTIFIKASI --- */}
       <CustomToast 
         message={toastMessage} 
         onClose={() => setToastMessage(null)} 
@@ -92,6 +114,14 @@ function App() {
             {scene === 'QUIZ' && <QuizSystem onFinished={() => setScene('WISH')} />}
             {scene === 'WISH' && <Wish onExplode={() => setScene('ENDING')} />}
             {scene === 'ENDING' && <Ending onReplay={() => setScene('STORY')} />}
+            
+            {/* PANEL ADMIN RAHASIA */}
+            {scene === 'ADMIN' && (
+                <AdminDashboard onBack={() => {
+                    setScene('OPENING');
+                    setIsLoading(true); // Reset seolah baru buka web
+                }} />
+            )}
 
           </motion.div>
         )}

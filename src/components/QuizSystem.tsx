@@ -1,13 +1,13 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CheckCircle, ChevronRight, MessageCircleHeart, Sparkles, BrainCircuit, Loader2, PenLine, Send, X } from 'lucide-react';
-import emailjs from '@emailjs/browser';
+import { supabase } from '../supabaseClient'; // IMPORT DARI FILE YANG BARU KITA BUAT
 
 interface QuizProps {
   onFinished: () => void;
 }
 
-// --- DATA PERTANYAAN (TETAP SAMA SEPERTI REQUEST) ---
+// --- DATA PERTANYAAN (TETAP SAMA/AMAN) ---
 const QUESTIONS_DATA = [
   // BAGIAN 1: INTRO & META
   {
@@ -28,8 +28,7 @@ const QUESTIONS_DATA = [
       { text: "Bingung", msg: "Bingung kenapa ada cowok se-effort ini ya? 🤭" }
     ]
   },
-
-  // BAGIAN 2: SEKOLAH (BACKSTREET LIFE)
+  // BAGIAN 2: SEKOLAH
   {
     q: "Di sekolah kita emang pura-pura 'Stranger' (Gak kenal), tapi sebenernya...", 
     options: [
@@ -48,8 +47,7 @@ const QUESTIONS_DATA = [
       { text: "Pura-pura main HP", msg: "Klise banget triknya, tapi ampuh sih 😂" }
     ]
   },
-
-  // BAGIAN 3: TENTANG KAMU (TEST OBSERVASI DIA)
+  // BAGIAN 3: TENTANG KAMU
   {
     q: "Coba tebak, hal apa dari aku yang paling sering kamu perhatiin diem-diem?",
     options: [
@@ -68,8 +66,7 @@ const QUESTIONS_DATA = [
       { text: "Misterius kayak Intel", msg: "Siap 86! Memantau hatimu... 🕵️‍♂️" }
     ]
   },
-
-  // BAGIAN 4: KEBIASAAN CHAT (EGO CHECK)
+  // BAGIAN 4: KEBIASAAN CHAT
   {
     q: "Kalau aku nge-chat jam 7 malem, Manda biasanya bales jam berapa?",
     options: [
@@ -88,8 +85,7 @@ const QUESTIONS_DATA = [
       { text: "Gak biasa aja", msg: "Bisa dibiasain kok mulai sekarang... 😏" }
     ]
   },
-
-  // BAGIAN 5: CEK PERASAAN (JEALOUSY & DYNAMIC)
+  // BAGIAN 5: CEK PERASAAN
   {
     q: "Misal nih, ada cewek lain di sekolah yang deketin aku. Reaksi Manda?",
     options: [
@@ -117,7 +113,6 @@ const QUESTIONS_DATA = [
       { text: "Dibelikan Makanan", msg: "Solusi terbaik! Perut kenyang hati senang 🍔" }
     ]
   },
-
   // BAGIAN 6: FUTURE PLAN
   {
     q: "Kan kita belum pernah jalan bareng. Kalo nanti 'Debut', enaknya ke mana?",
@@ -137,7 +132,6 @@ const QUESTIONS_DATA = [
       { text: "Angkat tapi diem doang", msg: "Lomba diem-dieman? Boleh siapa takut 😶" }
     ]
   },
-  
   // BAGIAN 7: THE EFFORT
   {
     q: "Tebak, kira-kira berapa lama aku bikin web spesial ini buat kamu?",
@@ -148,7 +142,6 @@ const QUESTIONS_DATA = [
       { text: "Seminggu full senyum", msg: "Lebih dari itu, seumur hidup ku dedikasikan... (lebay) 🤣" }
     ]
   },
-
   // BAGIAN 8: FINAL HOPE
   {
     q: "Terakhir. Harapan buat hubungan 'Unik' kita di 2026?",
@@ -161,11 +154,6 @@ const QUESTIONS_DATA = [
   }
 ];
 
-// --- KREDENSIAL EMAILJS ---
-const SERVICE_ID = "service_g78riy9";   
-const TEMPLATE_ID = "template_bcfqp9m"; 
-const PUBLIC_KEY = "1dX8SHnxzBmxcZ8-y";   
-
 const QuizSystem = ({ onFinished }: QuizProps) => {
   // --- STATE ---
   const [currentQ, setCurrentQ] = useState(0);
@@ -174,25 +162,24 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
   const [feedback, setFeedback] = useState<string>(""); 
   const [isSubmitting, setIsSubmitting] = useState(false);
   
-  // STATE UNTUK CUSTOM ANSWER
+  // STATE CUSTOM ANSWER
   const [isCustomMode, setIsCustomMode] = useState(false);
   const [customAnswer, setCustomAnswer] = useState("");
 
-  // STATE UNTUK SESI AKHIR (Q&A)
+  // STATE FINAL Q&A
   const [showFinalSection, setShowFinalSection] = useState(false);
   const [finalQuestion, setFinalQuestion] = useState("");
 
-  // --- REKAM JAWABAN (SILENT) ---
+  // REKAM JAWABAN (Disimpan di Ref)
   const answersRef = useRef<string[]>([]);
 
-  // --- AUDIO HELPER ---
   const playSound = () => {
     const audio = new Audio('/correct.mp3');
     audio.volume = 0.5;
     audio.play().catch(() => {});
   };
 
-  // 1. HANDLER JAWABAN PILIHAN GANDA
+  // --- 1. HANDLE JAWABAN PILIHAN ---
   const handleAnswer = (selectedIndex: number) => {
     if (status !== 'neutral') return;
 
@@ -202,9 +189,8 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
     const questionText = QUESTIONS_DATA[currentQ].q;
     const selectedOption = QUESTIONS_DATA[currentQ].options[selectedIndex];
     
-    // Simpan ke memory
     answersRef.current.push(
-      `Q${currentQ + 1}: ${questionText}\nJawaban: ${selectedOption.text}\n`
+      `Q${currentQ + 1}: ${questionText}\nJawaban: ${selectedOption.text}`
     );
 
     playSound();
@@ -212,72 +198,71 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
     moveToNext();
   };
 
-  // 2. HANDLER JAWABAN CUSTOM
+  // --- 2. HANDLE JAWABAN CUSTOM ---
   const handleCustomSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!customAnswer.trim()) return;
 
-    setStatus('selected'); // Biar gak bisa klik yg lain
+    setStatus('selected'); 
     
     const questionText = QUESTIONS_DATA[currentQ].q;
-    
-    // Simpan Custom Answer
     answersRef.current.push(
-      `Q${currentQ + 1}: ${questionText}\nJawaban (CUSTOM): ${customAnswer}\n`
+      `Q${currentQ + 1}: ${questionText}\nJawaban (CUSTOM): ${customAnswer}`
     );
 
     playSound();
     setFeedback("Noted! Jawaban jujur kamu udah aku simpen 📝");
-    
-    // Delay dikit baru lanjut
     moveToNext();
   };
 
-  // FUNGSI PINDAH SOAL
   const moveToNext = () => {
     setTimeout(() => {
       if (currentQ < QUESTIONS_DATA.length - 1) {
-        // Lanjut Soal Berikutnya
         setCurrentQ(prev => prev + 1);
         setStatus('neutral');
         setClickedIndex(null);
         setFeedback("");
-        setIsCustomMode(false); // Reset mode custom
-        setCustomAnswer("");    // Reset input custom
+        setIsCustomMode(false);
+        setCustomAnswer("");
       } else {
-        // SUDAH SOAL TERAKHIR -> PINDAH KE SESI TANYA AZRIEL
         setShowFinalSection(true);
       }
-    }, 2500); // 2.5 Detik
+    }, 2500); 
   };
 
-  // 3. HANDLER SESI AKHIR (KIRIM EMAIL)
-  const handleFinalFinish = (withQuestion: boolean) => {
+  // --- 3. SUBMIT KE SUPABASE ---
+  const handleFinalFinish = async (withQuestion: boolean) => {
     setIsSubmitting(true);
 
-    let finalReport = `=== HASIL QUIZ MANDA ===\n\n` + answersRef.current.join('\n-------------------\n');
+    const questionForAzriel = (withQuestion && finalQuestion.trim() !== "") 
+        ? finalQuestion 
+        : "(Tidak ada pertanyaan)";
 
-    // Tambahkan Pertanyaan untuk Azriel (Kalau ada)
-    finalReport += `\n\n=================================\n`;
-    if (withQuestion && finalQuestion.trim() !== "") {
-        finalReport += `PERTANYAAN KHUSUS UNTUK AZRIEL:\n"${finalQuestion}"\n`;
-    } else {
-        finalReport += `(Tidak ada pertanyaan untuk Azriel)\n`;
-    }
-    finalReport += `=================================\n`;
+    // Gabungkan jawaban jadi satu teks panjang yang rapi
+    const formattedLog = answersRef.current.join('\n\n-------------------\n\n');
 
-    const templateParams = {
-        message: finalReport
-    };
+    try {
+        const { error } = await supabase
+            .from('quiz_responses')
+            .insert({ 
+                answer_log: formattedLog,
+                final_message: questionForAzriel
+            });
 
-    emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, PUBLIC_KEY)
-      .then((res) => {
-        console.log("Data terkirim:", res.status);
-      })
-      .finally(() => {
+        if (error) {
+            console.error("Supabase Error:", error);
+            alert("Gagal menyimpan: " + error.message);
+        } else {
+            console.log("Sukses tersimpan di Database!");
+            // alert("Sukses! Data masuk ke Supabase."); // Aktifkan kalau mau debug
+        }
+    } catch (err) {
+        console.error("Connection Error:", err);
+        alert("Error koneksi database.");
+    } finally {
         setIsSubmitting(false);
-        onFinished(); // Lanjut ke scene WISH
-      });
+        onFinished(); // Lanjut ke Scene WISH
+    }
   };
 
   return (
@@ -301,15 +286,13 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
         {isSubmitting && (
             <div className="absolute inset-0 bg-black/80 z-50 flex flex-col items-center justify-center backdrop-blur-sm">
                 <Loader2 className="animate-spin text-pink-400 mb-2" size={40} />
-                <p className="text-white font-mono text-sm animate-pulse">Menyimpan semua jawaban...</p>
+                <p className="text-white font-mono text-sm animate-pulse">Menyimpan kenangan ke Database...</p>
             </div>
         )}
 
-        {/* LOGIC TAMPILAN: SOAL VS FINAL SECTION */}
         {!showFinalSection ? (
-            // --- TAMPILAN KUIS BIASA ---
+            // --- TAMPILAN QUIZ ---
             <>
-                {/* HEADER */}
                 <div className="mb-6">
                     <div className="flex justify-between items-end mb-2 px-1">
                         <span className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-bold flex items-center gap-2">
@@ -330,20 +313,14 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
                     </div>
                 </div>
 
-                {/* SOAL */}
                 <div className="min-h-[80px] flex items-center justify-center mb-6 relative">
-                    <h2 
-                        className="text-xl md:text-3xl font-serif text-center text-yellow-50 leading-snug drop-shadow-md"
-                        style={{ fontFamily: "'Cormorant Garamond', serif" }}
-                    >
+                    <h2 className="text-xl md:text-3xl font-serif text-center text-yellow-50 leading-snug drop-shadow-md" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
                         {QUESTIONS_DATA[currentQ].q}
                     </h2>
                 </div>
 
-                {/* AREA JAWABAN (NORMAL VS CUSTOM) */}
                 {!isCustomMode ? (
                     <>
-                        {/* PILIHAN GANDA DEFAULT */}
                         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
                             {QUESTIONS_DATA[currentQ].options.map((opt, idx) => {
                                 const isClicked = clickedIndex === idx;
@@ -377,7 +354,6 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
                             })}
                         </div>
 
-                        {/* TOMBOL JAWAB SENDIRI */}
                         {status === 'neutral' && (
                             <motion.button
                                 initial={{ opacity: 0 }}
@@ -391,7 +367,6 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
                         )}
                     </>
                 ) : (
-                    // --- MODE INPUT CUSTOM ---
                     <motion.form 
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
@@ -424,7 +399,6 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
                     </motion.form>
                 )}
 
-                {/* FEEDBACK AREA */}
                 <div className="h-[50px] mt-6 flex items-center justify-center">
                     <AnimatePresence mode='wait'>
                         {feedback && (
@@ -443,7 +417,7 @@ const QuizSystem = ({ onFinished }: QuizProps) => {
                 </div>
             </>
         ) : (
-            // --- TAMPILAN SESI AKHIR (Q&A AZRIEL) ---
+            // --- TAMPILAN FINAL (Q&A) ---
             <div className="flex flex-col items-center text-center py-4">
                  <div className="w-16 h-16 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-[0_0_20px_rgba(236,72,153,0.5)]">
                     <Sparkles className="text-white" size={32} />
